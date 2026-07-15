@@ -1,0 +1,502 @@
+/* --- Global Arcade Styling --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #150930 0%, #080315 100%);
+    color: #f0e6ff;
+    font-family: 'Rajdhani', 'Outfit', sans-serif;
+    font-weight: 500;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Scrollbar hiding */
+::-webkit-scrollbar {
+    display: none;
+}
+
+/* Immersive full-screen container */
+.arcade-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Glassmorphism Panel Base */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+.glass-panel:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(144, 0, 255, 0.15);
+}
+
+/* --- Tetris Game Frame --- */
+.game-frame {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 375px; /* Perfect for iPhone SE 3 */
+    height: 100%;
+    max-height: 667px;
+    justify-content: space-between;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Desktop sizing adaptation */
+@media (min-width: 600px) {
+    .game-frame {
+        max-width: 540px;
+        max-height: 850px;
+    }
+}
+
+/* --- Header Section --- */
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 45px;
+    padding: 0 10px;
+}
+
+.game-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(45deg, #00f0f0, #ff007f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(0, 240, 240, 0.2);
+}
+
+.hi-score-box {
+    text-align: right;
+}
+
+.hi-score-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ff007f;
+    margin: 0;
+}
+
+.hi-score-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.95rem;
+    color: #fff;
+    margin: 0;
+}
+
+/* --- Middle Panels --- */
+.game-panels-wrapper {
+    display: grid;
+    grid-template-columns: 55px 180px 75px;
+    gap: 8px;
+    justify-content: center;
+    align-items: start;
+    margin: 4px 0;
+}
+
+@media (min-width: 600px) {
+    .game-panels-wrapper {
+        grid-template-columns: 100px 300px 110px;
+        gap: 15px;
+    }
+}
+
+/* Side Column Styles */
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px;
+    text-align: center;
+}
+
+.panel-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8c82ab;
+    margin-bottom: 2px;
+}
+
+@media (min-width: 600px) {
+    .panel-title {
+        font-size: 0.75rem;
+    }
+    .side-panel {
+        padding: 10px;
+        gap: 10px;
+    }
+}
+
+/* Mini grids (Next/Hold previews) */
+.mini-grid-container {
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+}
+
+.mini-grid-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Stat Box styling */
+.stat-box {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 4px 2px;
+    margin-top: 4px;
+}
+
+.stat-label {
+    font-size: 0.6rem;
+    color: #8c82ab;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    color: #00f0f0;
+    font-weight: 700;
+    margin: 0;
+}
+
+@media (min-width: 600px) {
+    .stat-label {
+        font-size: 0.7rem;
+    }
+    .stat-val {
+        font-size: 1.2rem;
+    }
+}
+
+/* --- Main Tetris Board --- */
+.board-container {
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(144, 0, 255, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.game-board-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Grid lines overlay to give retro feeling */
+.grid-lines-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.015);
+    stroke-width: 0.1;
+}
+
+/* Screen message (Game Over, Paused, Start) */
+.board-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(8, 3, 21, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 15px;
+    z-index: 10;
+}
+
+.overlay-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #ff007f;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+    animation: pulse 1.5s infinite alternate;
+}
+
+.overlay-desc {
+    font-size: 0.75rem;
+    color: #8c82ab;
+    margin-bottom: 20px;
+}
+
+.overlay-btn {
+    background: linear-gradient(135deg, #00f0f0, #9000ff);
+    border: none;
+    color: #fff;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(0, 240, 240, 0.4);
+    transition: all 0.2s ease;
+}
+
+.overlay-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(144, 0, 255, 0.6);
+}
+
+/* --- Virtual Touch Controller (Mobile Layout) --- */
+.mobile-controls {
+    display: flex;
+    justify-content: space-between;
+    height: 190px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    gap: 20px;
+}
+
+.control-zone {
+    flex: 1;
+    display: grid;
+    height: 100%;
+}
+
+/* Left zone: Action and D-pad buttons */
+.left-zone {
+    grid-template-areas: 
+        "pause .    hold"
+        "hard  .    ."
+        "left  drop right";
+    grid-template-rows: 1fr 1fr 1.2fr;
+    grid-template-columns: 1.3fr 0.9fr 1.3fr;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Right zone: Rotate button only */
+.right-zone {
+    grid-template-areas: 
+        "rotate"
+        "rotate"
+        "rotate";
+    grid-template-rows: 1fr 1fr 1.2fr;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    align-items: center;
+}
+
+.ctrl-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: #f0e6ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: background 0.1s, transform 0.1s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 54px;
+    margin: auto;
+}
+
+.ctrl-btn:active {
+    background: rgba(144, 0, 255, 0.25);
+    border-color: #9000ff;
+    transform: scale(0.92);
+    box-shadow: 0 0 10px rgba(144,0,255,0.4);
+}
+
+/* Layout areas assignment */
+.btn-left { 
+    grid-area: left; 
+    max-width: 68px; 
+    font-size: 1.4rem; 
+}
+.btn-right { 
+    grid-area: right; 
+    max-width: 68px; 
+    font-size: 1.4rem; 
+}
+.btn-drop { grid-area: drop; border-radius: 8px; font-size: 1rem; }
+/* btn-up removed */
+
+.btn-rotate { 
+    grid-area: rotate; 
+    border-radius: 50%; 
+    aspect-ratio: 1;
+    height: auto;
+    max-width: 76px; /* Bigger rotate button */
+    font-size: 1.5rem; 
+    color: #00f0f0;
+    border-color: rgba(0, 240, 240, 0.2);
+}
+.btn-rotate:active {
+    background: rgba(0, 240, 240, 0.25);
+    border-color: #00f0f0;
+    box-shadow: 0 0 12px rgba(0, 240, 240, 0.4);
+}
+
+.btn-hard { 
+    grid-area: hard; 
+    border-radius: 10px; 
+    font-size: 0.95rem; 
+    color: #ff007f;
+    border-color: rgba(255, 0, 127, 0.2);
+    aspect-ratio: auto;
+    height: 42px;
+}
+.btn-hard:active {
+    background: rgba(255, 0, 127, 0.25);
+    border-color: #ff007f;
+    box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
+}
+
+.btn-pause { 
+    grid-area: pause; 
+    border-radius: 10px; 
+    font-size: 0.8rem; 
+    color: #00f0f0;
+    border-color: rgba(0, 240, 240, 0.25);
+    aspect-ratio: auto;
+    height: 42px;
+    text-transform: uppercase;
+}
+.btn-pause:active {
+    background: rgba(0, 240, 240, 0.25);
+    border-color: #00f0f0;
+    box-shadow: 0 0 12px rgba(0, 240, 240, 0.4);
+}
+
+.btn-hold { 
+    grid-area: hold; 
+    border-radius: 10px; 
+    font-size: 0.8rem; 
+    color: #e0e0e0;
+    border-color: rgba(255,255,255,0.15);
+    aspect-ratio: auto;
+    height: 42px;
+    text-transform: uppercase;
+}
+
+/* Keyboard Hints panel on Desktop */
+.keyboard-hints {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .keyboard-hints {
+        display: block;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        color: #8c82ab;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 5px;
+    }
+    .keyboard-hints code {
+        color: #00f0f0;
+        background: rgba(0,0,0,0.2);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+}
+
+/* --- Blazor Error UI overrides --- */
+#blazor-error-ui {
+    background: #1b0c3a;
+    border-top: 2px solid #ff007f;
+    color: #fff;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+}
+#blazor-error-ui a {
+    color: #00f0f0;
+}
+
+/* --- Animations --- */
+@keyframes pulse {
+    0% {
+        transform: scale(0.98);
+        opacity: 0.85;
+    }
+    100% {
+        transform: scale(1.02);
+        opacity: 1;
+    }
+}
+
+/* --- Default loading progress styles (maintained) --- */
+.loading-progress {
+    position: relative;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    margin: 20vh auto 1rem auto;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+.loading-progress circle:last-child {
+    stroke: #9000ff;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    color: #00f0f0;
+    font-family: 'Orbitron', sans-serif;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}

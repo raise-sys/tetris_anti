@@ -1,0 +1,1 @@
+C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\publish\web.config

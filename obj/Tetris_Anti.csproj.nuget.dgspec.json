@@ -1,0 +1,103 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\00_ReiSoft\\04_C#\\06_WebAssembly\\04_Tetris_Anti\\Tetris_Anti\\Tetris_Anti.csproj": {}
+  },
+  "projects": {
+    "C:\\00_ReiSoft\\04_C#\\06_WebAssembly\\04_Tetris_Anti\\Tetris_Anti\\Tetris_Anti.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\00_ReiSoft\\04_C#\\06_WebAssembly\\04_Tetris_Anti\\Tetris_Anti\\Tetris_Anti.csproj",
+        "projectName": "Tetris_Anti",
+        "projectPath": "C:\\00_ReiSoft\\04_C#\\06_WebAssembly\\04_Tetris_Anti\\Tetris_Anti\\Tetris_Anti.csproj",
+        "packagesPath": "C:\\Users\\Panasonic\\.nuget\\packages\\",
+        "outputPath": "C:\\00_ReiSoft\\04_C#\\06_WebAssembly\\04_Tetris_Anti\\Tetris_Anti\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Panasonic\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.Components.WebAssembly": {
+              "target": "Package",
+              "version": "[8.0.5, )"
+            },
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.5, )"
+            },
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.5, )",
+              "autoReferenced": true
+            },
+            "Microsoft.NET.Sdk.WebAssembly.Pack": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.5, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
+              "version": "[8.0.5, 8.0.5]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "browser-wasm": {
+          "#import": []
+        }
+      }
+    }
+  }
+}

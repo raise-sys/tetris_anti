@@ -1,0 +1,897 @@
+@page "/"
+@using System.Threading
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Arcade Tetris</PageTitle>
+
+<div class="arcade-container">
+    <div class="game-frame glass-panel" @ref="gameContainerRef" @onkeydown="HandleKeyDown" tabindex="0" style="outline: none;">
+        <!-- Header -->
+        <div class="game-header">
+            <div class="game-title">TETRIS</div>
+            <div class="hi-score-box">
+                <p class="hi-score-label">High Score</p>
+                <p class="hi-score-val">@highScore.ToString("D6")</p>
+            </div>
+        </div>
+
+        <!-- Middle: Hold, Board, Next & Stats -->
+        <div class="game-panels-wrapper">
+            <!-- Hold Column (Left) -->
+            <div class="side-panel glass-panel">
+                <span class="panel-title">Hold</span>
+                <div class="mini-grid-container">
+                    @if (holdPiece.Type != 0)
+                    {
+                        <svg viewBox="0 0 40 40" class="mini-grid-svg">
+                            @RenderMiniPiece(holdPiece.Type)
+                        </svg>
+                    }
+                </div>
+                
+                <div class="stat-box">
+                    <p class="stat-label">Level</p>
+                    <p class="stat-val">@level</p>
+                </div>
+            </div>
+
+            <!-- Tetris Board (Center) -->
+            <div class="board-container">
+                <svg viewBox="0 0 100 200" class="game-board-svg">
+                    <!-- Grid background pattern -->
+                    <defs>
+                        <pattern id="gridPattern" width="10" height="10" patternUnits="userSpaceOnUse">
+                            <rect width="10" height="10" fill="none" />
+                            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255, 255, 255, 0.04)" stroke-width="0.3"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100" height="200" fill="url(#gridPattern)" />
+
+                    <!-- Board blocks -->
+                    @for (int r = 0; r < 20; r++)
+                    {
+                        @for (int c = 0; c < 10; c++)
+                        {
+                            if (board[r, c] != 0)
+                            {
+                                var color = Shapes.Colors[board[r, c]];
+                                var glow = Shapes.GlowColors[board[r, c]];
+                                <rect x="@(c * 10 + 0.5)" y="@(r * 10 + 0.5)" width="9.0" height="9.0" rx="1.5" ry="1.5" 
+                                      fill="@color" style="filter: drop-shadow(0px 0px 1.5px @glow);" />
+                            }
+                        }
+                    }
+
+                    <!-- Ghost (Shadow) piece -->
+                    @if (gameState == GameState.Playing)
+                    {
+                        var ghostY = GetGhostY();
+                        var color = Shapes.Colors[currentPiece.Type];
+                        var size = currentPiece.Matrix.GetLength(0);
+                        for (int r = 0; r < size; r++)
+                        {
+                            for (int c = 0; c < size; c++)
+                            {
+                                if (currentPiece.Matrix[r, c] != 0)
+                                {
+                                    int gy = ghostY + r;
+                                    int gx = currentPiece.X + c;
+                                    if (gy >= 0 && gy < 20 && gx >= 0 && gx < 10)
+                                    {
+                                        <rect x="@(gx * 10 + 0.8)" y="@(gy * 10 + 0.8)" width="8.4" height="8.4" rx="1.5" ry="1.5" 
+                                              fill="none" stroke="@color" stroke-width="0.6" stroke-dasharray="1.5, 1" opacity="0.6" />
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    <!-- Active piece -->
+                    @if (gameState == GameState.Playing)
+                    {
+                        var color = Shapes.Colors[currentPiece.Type];
+                        var glow = Shapes.GlowColors[currentPiece.Type];
+                        var size = currentPiece.Matrix.GetLength(0);
+                        for (int r = 0; r < size; r++)
+                        {
+                            for (int c = 0; c < size; c++)
+                            {
+                                if (currentPiece.Matrix[r, c] != 0)
+                                {
+                                    int by = currentPiece.Y + r;
+                                    int bx = currentPiece.X + c;
+                                    if (by >= 0 && by < 20 && bx >= 0 && bx < 10)
+                                    {
+                                        <rect x="@(bx * 10 + 0.5)" y="@(by * 10 + 0.5)" width="9.0" height="9.0" rx="1.5" ry="1.5" 
+                                              fill="@color" style="filter: drop-shadow(0px 0px 1.5px @glow);" />
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </svg>
+
+                <!-- Screen overlays for different game states -->
+                @if (gameState == GameState.NotStarted)
+                {
+                    <div class="board-overlay">
+                        <div class="overlay-title">ARCADE TETRIS</div>
+                        <div class="overlay-desc">Use arrow keys or touch buttons to play.</div>
+                        <button class="overlay-btn" @onclick="StartGame">START GAME</button>
+                    </div>
+                }
+                else if (gameState == GameState.Paused)
+                {
+                    <div class="board-overlay">
+                        <div class="overlay-title">PAUSED</div>
+                        <div class="overlay-desc">Score: @score</div>
+                        <button class="overlay-btn" @onclick="ResumeGame">RESUME</button>
+                    </div>
+                }
+                else if (gameState == GameState.GameOver)
+                {
+                    <div class="board-overlay">
+                        <div class="overlay-title">GAME OVER</div>
+                        <div class="overlay-desc">Final Score: @score<br/>Level: @level</div>
+                        <button class="overlay-btn" @onclick="RestartGame">PLAY AGAIN</button>
+                    </div>
+                }
+            </div>
+
+            <!-- Next & Stats Column (Right) -->
+            <div class="side-panel glass-panel">
+                <span class="panel-title">Next</span>
+                <div class="mini-grid-container">
+                    @if (nextPiece.Type != 0)
+                    {
+                        <svg viewBox="0 0 40 40" class="mini-grid-svg">
+                            @RenderMiniPiece(nextPiece.Type)
+                        </svg>
+                    }
+                </div>
+
+                <div class="stat-box">
+                    <p class="stat-label">Score</p>
+                    <p class="stat-val">@score</p>
+                </div>
+                
+                <div class="stat-box">
+                    <p class="stat-label">Lines</p>
+                    <p class="stat-val">@lines</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom: Controls D-pad (Mobile Friendly) -->
+        <div class="mobile-controls">
+            <div class="control-zone left-zone">
+                <button class="ctrl-btn btn-pause" @onclick="TogglePause">
+                    @(gameState == GameState.Paused ? "Resume" : "Pause")
+                </button>
+                <button class="ctrl-btn btn-hard" @onclick="HardDrop">Hard</button>
+                <button class="ctrl-btn btn-hold" @onclick="Hold">Hold</button>
+                <button class="ctrl-btn btn-left" @onclick="MoveLeft">◀</button>
+                <button class="ctrl-btn btn-right" @onclick="MoveRight">▶</button>
+                <button class="ctrl-btn btn-drop" @onclick="SoftDrop">▼</button>
+            </div>
+            <div class="control-zone right-zone">
+                <button class="ctrl-btn btn-rotate" @onclick="Rotate">↻</button>
+            </div>
+        </div>
+
+        <!-- Keyboard Hints (Desktop Only) -->
+        <div class="keyboard-hints">
+            Move: <code>◀</code><code>▶</code> | Soft Drop: <code>▼</code> | Hard Drop: <code>Space</code><br/>
+            Rotate: <code>▲</code> / <code>X</code> | Hold: <code>Shift</code> / <code>C</code> | Pause: <code>Esc</code> / <code>P</code>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference gameContainerRef;
+    private int[,] board = new int[20, 10];
+    private Piece currentPiece = new Piece();
+    private Piece nextPiece = new Piece();
+    private Piece holdPiece = new Piece();
+
+    private int score = 0;
+    private int level = 1;
+    private int lines = 0;
+    private bool canHold = true;
+    private int highScore = 0;
+    
+    private GameState gameState = GameState.NotStarted;
+    private CancellationTokenSource? cts;
+    private List<int> pieceBag = new List<int>();
+    private Random random = new Random();
+
+    public enum GameState
+    {
+        NotStarted,
+        Playing,
+        Paused,
+        GameOver
+    }
+
+    public class Piece
+    {
+        public int Type { get; set; } = 0;
+        public int[,] Matrix { get; set; } = new int[0,0];
+        public int X { get; set; } = 0;
+        public int Y { get; set; } = 0;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHighScore();
+    }
+
+    private void StartGameLoop()
+    {
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        var token = cts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested && gameState == GameState.Playing)
+            {
+                await Task.Delay(GetSpeedDelay(), token);
+                if (token.IsCancellationRequested || gameState != GameState.Playing)
+                    break;
+
+                await InvokeAsync(() =>
+                {
+                    MoveDown();
+                    StateHasChanged();
+                });
+            }
+        }, token);
+    }
+
+    private async Task StartGame()
+    {
+        board = new int[20, 10];
+        score = 0;
+        level = 1;
+        lines = 0;
+        canHold = true;
+        pieceBag.Clear();
+
+        await LoadHighScore();
+
+        // Spawn initial piece
+        int currentType = GetNextPieceFromBag();
+        currentPiece.Type = currentType;
+        currentPiece.Matrix = Shapes.GetShapeMatrix(currentType);
+        currentPiece.X = (10 - currentPiece.Matrix.GetLength(1)) / 2;
+        currentPiece.Y = GetSpawnY(currentPiece.Matrix);
+
+        // Spawn next piece
+        int nextType = GetNextPieceFromBag();
+        nextPiece.Type = nextType;
+        nextPiece.Matrix = Shapes.GetShapeMatrix(nextType);
+        nextPiece.X = 0;
+        nextPiece.Y = 0;
+
+        holdPiece = new Piece();
+
+        gameState = GameState.Playing;
+        StartGameLoop();
+
+        await Task.Delay(50);
+        try
+        {
+            await gameContainerRef.FocusAsync();
+        }
+        catch
+        {
+            // Ignore focus error
+        }
+    }
+
+    private void ResumeGame()
+    {
+        if (gameState == GameState.Paused)
+        {
+            gameState = GameState.Playing;
+            StartGameLoop();
+        }
+    }
+
+    private void PauseGame()
+    {
+        if (gameState == GameState.Playing)
+        {
+            gameState = GameState.Paused;
+            cts?.Cancel();
+        }
+    }
+
+    private void TogglePause()
+    {
+        if (gameState == GameState.Playing)
+        {
+            PauseGame();
+        }
+        else if (gameState == GameState.Paused)
+        {
+            ResumeGame();
+        }
+    }
+
+    private async Task RestartGame()
+    {
+        cts?.Cancel();
+        await StartGame();
+    }
+
+    private int GetNextPieceFromBag()
+    {
+        if (pieceBag.Count == 0)
+        {
+            pieceBag.AddRange(new[] { 1, 2, 3, 4, 5, 6, 7 });
+            int n = pieceBag.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = random.Next(n + 1);
+                int value = pieceBag[k];
+                pieceBag[k] = pieceBag[n];
+                pieceBag[n] = value;
+            }
+        }
+
+        int next = pieceBag[0];
+        pieceBag.RemoveAt(0);
+        return next;
+    }
+
+    private int GetSpawnY(int[,] matrix)
+    {
+        int rows = matrix.GetLength(0);
+        int cols = matrix.GetLength(1);
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
+            {
+                if (matrix[r, c] != 0)
+                {
+                    return -r;
+                }
+            }
+        }
+        return 0;
+    }
+
+    private int GetGhostY()
+    {
+        int ghostY = currentPiece.Y;
+        while (!CheckCollision(currentPiece.Matrix, currentPiece.X, ghostY + 1))
+        {
+            ghostY++;
+        }
+        return ghostY;
+    }
+
+    private bool CheckCollision(int[,] matrix, int x, int y)
+    {
+        int size = matrix.GetLength(0);
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                if (matrix[r, c] != 0)
+                {
+                    int boardX = x + c;
+                    int boardY = y + r;
+
+                    if (boardX < 0 || boardX >= 10 || boardY >= 20)
+                    {
+                        return true;
+                    }
+
+                    if (boardY >= 0 && board[boardY, boardX] != 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void MoveLeft()
+    {
+        if (gameState != GameState.Playing) return;
+        if (!CheckCollision(currentPiece.Matrix, currentPiece.X - 1, currentPiece.Y))
+        {
+            currentPiece.X--;
+            _ = PlayMoveSound();
+        }
+        StateHasChanged();
+    }
+
+    private void MoveRight()
+    {
+        if (gameState != GameState.Playing) return;
+        if (!CheckCollision(currentPiece.Matrix, currentPiece.X + 1, currentPiece.Y))
+        {
+            currentPiece.X++;
+            _ = PlayMoveSound();
+        }
+        StateHasChanged();
+    }
+
+    private void MoveDown()
+    {
+        if (gameState != GameState.Playing) return;
+
+        if (!CheckCollision(currentPiece.Matrix, currentPiece.X, currentPiece.Y + 1))
+        {
+            currentPiece.Y++;
+        }
+        else
+        {
+            LockPiece();
+        }
+    }
+
+    private void SoftDrop()
+    {
+        if (gameState != GameState.Playing) return;
+
+        if (!CheckCollision(currentPiece.Matrix, currentPiece.X, currentPiece.Y + 1))
+        {
+            currentPiece.Y++;
+            score += 1;
+            _ = PlayMoveSound();
+        }
+        else
+        {
+            LockPiece();
+        }
+        StateHasChanged();
+    }
+
+    private void HardDrop()
+    {
+        if (gameState != GameState.Playing) return;
+
+        int dropCount = 0;
+        while (!CheckCollision(currentPiece.Matrix, currentPiece.X, currentPiece.Y + 1))
+        {
+            currentPiece.Y++;
+            dropCount++;
+        }
+
+        score += dropCount * 2;
+        _ = PlayDropSound();
+        LockPiece();
+        StateHasChanged();
+    }
+
+    private void Rotate()
+    {
+        if (gameState != GameState.Playing) return;
+
+        int[,] rotated = RotateMatrix(currentPiece.Matrix);
+
+        // Simple Wall Kick system
+        int[] kickX = { 0, -1, 1, 0, 0 };
+        int[] kickY = { 0, 0, 0, -1, 1 };
+
+        for (int i = 0; i < kickX.Length; i++)
+        {
+            int testX = currentPiece.X + kickX[i];
+            int testY = currentPiece.Y + kickY[i];
+
+            if (!CheckCollision(rotated, testX, testY))
+            {
+                currentPiece.Matrix = rotated;
+                currentPiece.X = testX;
+                currentPiece.Y = testY;
+                _ = PlayRotateSound();
+                break;
+            }
+        }
+        StateHasChanged();
+    }
+
+    private int[,] RotateMatrix(int[,] matrix)
+    {
+        int size = matrix.GetLength(0);
+        int[,] result = new int[size, size];
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                result[c, size - 1 - r] = matrix[r, c];
+            }
+        }
+        return result;
+    }
+
+    private void Hold()
+    {
+        if (gameState != GameState.Playing || !canHold) return;
+
+        _ = PlayRotateSound();
+
+        if (holdPiece.Type == 0)
+        {
+            holdPiece.Type = currentPiece.Type;
+            holdPiece.Matrix = Shapes.GetShapeMatrix(currentPiece.Type);
+
+            currentPiece.Type = nextPiece.Type;
+            currentPiece.Matrix = nextPiece.Matrix;
+            currentPiece.X = (10 - currentPiece.Matrix.GetLength(1)) / 2;
+            currentPiece.Y = GetSpawnY(currentPiece.Matrix);
+
+            int nextType = GetNextPieceFromBag();
+            nextPiece.Type = nextType;
+            nextPiece.Matrix = Shapes.GetShapeMatrix(nextType);
+        }
+        else
+        {
+            int tempType = currentPiece.Type;
+
+            currentPiece.Type = holdPiece.Type;
+            currentPiece.Matrix = Shapes.GetShapeMatrix(holdPiece.Type);
+            currentPiece.X = (10 - currentPiece.Matrix.GetLength(1)) / 2;
+            currentPiece.Y = GetSpawnY(currentPiece.Matrix);
+
+            holdPiece.Type = tempType;
+            holdPiece.Matrix = Shapes.GetShapeMatrix(tempType);
+        }
+
+        canHold = false;
+        StateHasChanged();
+    }
+
+    private void LockPiece()
+    {
+        int size = currentPiece.Matrix.GetLength(0);
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                if (currentPiece.Matrix[r, c] != 0)
+                {
+                    int boardX = currentPiece.X + c;
+                    int boardY = currentPiece.Y + r;
+
+                    if (boardY >= 0 && boardY < 20 && boardX >= 0 && boardX < 10)
+                    {
+                        board[boardY, boardX] = currentPiece.Matrix[r, c];
+                    }
+                }
+            }
+        }
+
+        int linesClearedThisTurn = 0;
+        for (int r = 19; r >= 0; r--)
+        {
+            bool isFull = true;
+            for (int c = 0; c < 10; c++)
+            {
+                if (board[r, c] == 0)
+                {
+                    isFull = false;
+                    break;
+                }
+            }
+
+            if (isFull)
+            {
+                linesClearedThisTurn++;
+                for (int y = r; y > 0; y--)
+                {
+                    for (int x = 0; x < 10; x++)
+                    {
+                        board[y, x] = board[y - 1, x];
+                    }
+                }
+                for (int x = 0; x < 10; x++)
+                {
+                    board[0, x] = 0;
+                }
+                r++;
+            }
+        }
+
+        if (linesClearedThisTurn > 0)
+        {
+            lines += linesClearedThisTurn;
+            int points = linesClearedThisTurn switch
+            {
+                1 => 100,
+                2 => 300,
+                3 => 500,
+                4 => 800,
+                _ => 0
+            };
+            score += points * level;
+
+            int newLevel = (lines / 10) + 1;
+            if (newLevel > level)
+            {
+                level = newLevel;
+                _ = PlayLevelUpSound();
+            }
+            else
+            {
+                _ = PlayLineClearSound(linesClearedThisTurn);
+            }
+        }
+        else
+        {
+            _ = PlayDropSound();
+        }
+
+        SpawnNextTurnPiece();
+    }
+
+    private void SpawnNextTurnPiece()
+    {
+        currentPiece.Type = nextPiece.Type;
+        currentPiece.Matrix = nextPiece.Matrix;
+        currentPiece.X = (10 - currentPiece.Matrix.GetLength(1)) / 2;
+        currentPiece.Y = GetSpawnY(currentPiece.Matrix);
+
+        int nextType = GetNextPieceFromBag();
+        nextPiece.Type = nextType;
+        nextPiece.Matrix = Shapes.GetShapeMatrix(nextType);
+        nextPiece.X = 0;
+        nextPiece.Y = 0;
+
+        canHold = true;
+
+        if (CheckCollision(currentPiece.Matrix, currentPiece.X, currentPiece.Y))
+        {
+            gameState = GameState.GameOver;
+            cts?.Cancel();
+            _ = PlayGameOverSound();
+            _ = SaveHighScore();
+        }
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "p" || e.Key == "P" || e.Key == "Escape")
+        {
+            if (gameState == GameState.Playing) PauseGame();
+            else if (gameState == GameState.Paused) ResumeGame();
+            StateHasChanged();
+            return;
+        }
+
+        if (gameState != GameState.Playing) return;
+
+        switch (e.Key)
+        {
+            case "ArrowLeft":
+                MoveLeft();
+                break;
+            case "ArrowRight":
+                MoveRight();
+                break;
+            case "ArrowDown":
+                SoftDrop();
+                break;
+            case "ArrowUp":
+            case "x":
+            case "X":
+                Rotate();
+                break;
+            case " ":
+                HardDrop();
+                break;
+            case "c":
+            case "C":
+            case "Shift":
+                Hold();
+                break;
+        }
+    }
+
+    private int GetSpeedDelay()
+    {
+        return level switch
+        {
+            1 => 1000,
+            2 => 850,
+            3 => 700,
+            4 => 550,
+            5 => 450,
+            6 => 350,
+            7 => 280,
+            8 => 220,
+            9 => 170,
+            10 => 130,
+            _ => 100
+        };
+    }
+
+    private async Task PlayMoveSound() => await JSRuntime.InvokeVoidAsync("tetrisAudio.playMove");
+    private async Task PlayRotateSound() => await JSRuntime.InvokeVoidAsync("tetrisAudio.playRotate");
+    private async Task PlayDropSound() => await JSRuntime.InvokeVoidAsync("tetrisAudio.playDrop");
+    private async Task PlayLineClearSound(int lines) => await JSRuntime.InvokeVoidAsync("tetrisAudio.playLineClear", lines);
+    private async Task PlayGameOverSound() => await JSRuntime.InvokeVoidAsync("tetrisAudio.playGameOver");
+    private async Task PlayLevelUpSound() => await JSRuntime.InvokeVoidAsync("tetrisAudio.playLevelUp");
+
+    private async Task LoadHighScore()
+    {
+        try
+        {
+            var saved = await JSRuntime.InvokeAsync<string>("tetrisStorage.getItem", "arcade_tetris_highscore");
+            if (int.TryParse(saved, out int val))
+            {
+                highScore = val;
+            }
+        }
+        catch
+        {
+            // Ignore storage failure
+        }
+    }
+
+    private async Task SaveHighScore()
+    {
+        if (score > highScore)
+        {
+            highScore = score;
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("tetrisStorage.setItem", "arcade_tetris_highscore", highScore.ToString());
+            }
+            catch
+            {
+                // Ignore storage failure
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+    }
+
+    /* --- Mini-Piece Render Helper --- */
+    RenderFragment RenderMiniPiece(int type) => builder =>
+    {
+        var matrix = Shapes.GetShapeMatrix(type);
+        var color = Shapes.Colors[type];
+        var glow = Shapes.GlowColors[type];
+        int size = matrix.GetLength(0);
+
+        int minR = size, maxR = -1, minC = size, maxC = -1;
+        for (int r = 0; r < size; r++)
+        {
+            for (int c = 0; c < size; c++)
+            {
+                if (matrix[r, c] != 0)
+                {
+                    if (r < minR) minR = r;
+                    if (r > maxR) maxR = r;
+                    if (c < minC) minC = c;
+                    if (c > maxC) maxC = c;
+                }
+            }
+        }
+
+        if (maxR == -1) return;
+
+        int activeWidth = (maxC - minC + 1);
+        int activeHeight = (maxR - minR + 1);
+
+        double cellSize = 8.0;
+        double gap = 0.6;
+
+        double offsetX = (40.0 - (activeWidth * cellSize)) / 2.0 - (minC * cellSize);
+        double offsetY = (40.0 - (activeHeight * cellSize)) / 2.0 - (minR * cellSize);
+
+        for (int r = minR; r <= maxR; r++)
+        {
+            for (int c = minC; c <= maxC; c++)
+            {
+                if (matrix[r, c] != 0)
+                {
+                    double x = offsetX + c * cellSize + gap / 2.0;
+                    double y = offsetY + r * cellSize + gap / 2.0;
+                    double w = cellSize - gap;
+
+                    builder.OpenElement(0, "rect");
+                    builder.AddAttribute(1, "x", x.ToString("F1"));
+                    builder.AddAttribute(2, "y", y.ToString("F1"));
+                    builder.AddAttribute(3, "width", w.ToString("F1"));
+                    builder.AddAttribute(4, "height", w.ToString("F1"));
+                    builder.AddAttribute(5, "rx", "1.2");
+                    builder.AddAttribute(6, "ry", "1.2");
+                    builder.AddAttribute(7, "fill", color);
+                    builder.AddAttribute(8, "style", $"filter: drop-shadow(0px 0px 1px {glow});");
+                    builder.CloseElement();
+                }
+            }
+        }
+    };
+
+    /* --- Nested Shapes Data Class --- */
+    public static class Shapes
+    {
+        public static readonly int[][,] Tetrominoes = new int[][,]
+        {
+            new int[0,0],
+            new int[,] { // 1: I
+                {0, 0, 0, 0},
+                {1, 1, 1, 1},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0}
+            },
+            new int[,] { // 2: O
+                {2, 2},
+                {2, 2}
+            },
+            new int[,] { // 3: T
+                {0, 3, 0},
+                {3, 3, 3},
+                {0, 0, 0}
+            },
+            new int[,] { // 4: S
+                {0, 4, 4},
+                {4, 4, 0},
+                {0, 0, 0}
+            },
+            new int[,] { // 5: Z
+                {5, 5, 0},
+                {0, 5, 5},
+                {0, 0, 0}
+            },
+            new int[,] { // 6: J
+                {6, 0, 0},
+                {6, 6, 6},
+                {0, 0, 0}
+            },
+            new int[,] { // 7: L
+                {0, 0, 7},
+                {7, 7, 7},
+                {0, 0, 0}
+            }
+        };
+
+        public static readonly string[] Colors = new string[]
+        {
+            "",
+            "#00f0f0", // Cyan
+            "#f0f000", // Yellow
+            "#a000f0", // Purple
+            "#00f000", // Green
+            "#f00000", // Red
+            "#0055ff", // Blue
+            "#ffaa00"  // Orange
+        };
+
+        public static readonly string[] GlowColors = new string[]
+        {
+            "",
+            "rgba(0, 240, 240, 0.7)",
+            "rgba(240, 240, 0, 0.7)",
+            "rgba(160, 0, 240, 0.7)",
+            "rgba(0, 240, 0, 0.7)",
+            "rgba(240, 0, 0, 0.7)",
+            "rgba(0, 85, 255, 0.7)",
+            "rgba(255, 170, 0, 0.7)"
+        };
+
+        public static int[,] GetShapeMatrix(int type)
+        {
+            int[,] source = Tetrominoes[type];
+            int size = source.GetLength(0);
+            int[,] copy = new int[size, size];
+            Array.Copy(source, copy, source.Length);
+            return copy;
+        }
+    }
+}
