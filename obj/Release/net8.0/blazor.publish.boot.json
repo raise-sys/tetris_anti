@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Tetris_Anti",
   "resources": {
-    "hash": "sha256-x9RHxlDXnWx/GZLT8eUGrTQo3La6/7abScQHkxx7034=",
+    "hash": "sha256-mCO64dUvR4IBKppVf/gOFsi5fejm11mo5FSEKDt/yDQ=",
     "jsModuleNative": {
       "dotnet.native.8.0.5.p1664ifl59.js": "sha256-boyHe+0RMZDkzBKGhsrnXPhPg3oZ6UqJnTUzngJPjNY="
     },
@@ -48,7 +48,7 @@
       "System.Text.Encodings.Web.wasm": "sha256-V69v6JYAgTsrgM4epAyn/+1+KjM60Hxzokb2hKtbPt0=",
       "System.Text.Json.wasm": "sha256-yFpd40kxP4a+bknxLmZWmpA4LMA6DykjaWwdnz3di+0=",
       "System.Text.RegularExpressions.wasm": "sha256-o6Ef/uOI9sFxJXKnXQbJnRMbcIIJ/ZFdc4fFqA9wu7Y=",
-      "Tetris_Anti.wasm": "sha256-70SwA0JYvkva6tSg0kcxFOpfptyPLC9suTXOglKZyhM="
+      "Tetris_Anti.wasm": "sha256-yghTt01owU+bgnsYSrxcQ0IrAC7v9tUGK914kOzqIiU="
     }
   },
   "cacheBootResources": true,

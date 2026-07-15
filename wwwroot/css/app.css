@@ -312,7 +312,7 @@ html, body {
 .mobile-controls {
     display: flex;
     justify-content: space-between;
-    height: 190px;
+    height: 150px;
     padding: 5px 10px;
     box-sizing: border-box;
     gap: 20px;
@@ -328,9 +328,8 @@ html, body {
 .left-zone {
     grid-template-areas: 
         "hard .    hold"
-        "left drop right"
-        ".    .    .";
-    grid-template-rows: 1fr 1.2fr 0.8fr;
+        "left drop right";
+    grid-template-rows: 1fr 1.2fr;
     grid-template-columns: 1.3fr 0.9fr 1.3fr;
     gap: 6px;
     align-items: center;
@@ -340,9 +339,8 @@ html, body {
 .right-zone {
     grid-template-areas: 
         "rotate"
-        "rotate"
-        ".";
-    grid-template-rows: 1fr 1.2fr 0.8fr;
+        "rotate";
+    grid-template-rows: 1fr 1.2fr;
     grid-template-columns: 1fr;
     gap: 6px;
     align-items: center;

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tetris_Anti")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0db5379e9858384c29b1b57730d0bf01ca1bee91")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51b9e817a3b9d8ee94ebb19d4f26310eb340b08a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tetris_Anti")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tetris_Anti")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

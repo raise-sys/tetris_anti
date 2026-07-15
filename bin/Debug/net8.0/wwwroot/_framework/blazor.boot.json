@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Tetris_Anti",
   "resources": {
-    "hash": "sha256-y53pyMKUktI/P8y6k+eVVaNdoVTwHfGqiVwk+vsdr10=",
+    "hash": "sha256-fE53kEPmEBZv69dVTWOxEmdRS/d2WKvtOCAdb7kms38=",
     "jsModuleNative": {
       "dotnet.native.8.0.5.p1664ifl59.js": "sha256-boyHe+0RMZDkzBKGhsrnXPhPg3oZ6UqJnTUzngJPjNY="
     },
@@ -208,10 +208,10 @@
       "mscorlib.wasm": "sha256-XvLAB5IyfVSmj5aaGnPwgVFaaZz8jXmbN8WmeopiPBM=",
       "netstandard.wasm": "sha256-TbMssdnuTiKq1gjTPkpgROAuWN0uhvPnagvWR+wAgNs=",
       "System.Private.CoreLib.wasm": "sha256-sscg+Efk8ROPq+q4IVmhShzITuoOYvB8Bsc+Mp9vcSM=",
-      "Tetris_Anti.wasm": "sha256-i2qESzWaeygIpqTGRpJMSCX1zdoZyKkYHWEntnDIod8="
+      "Tetris_Anti.wasm": "sha256-GfcRGfyIr8cG355DPWR0h3dv07UyeEzI547oWd4xMFk="
     },
     "pdb": {
-      "Tetris_Anti.pdb": "sha256-EmrdOO4RtQBDLCnOeHRXhDlmwrPbhqmuYF7SJGIU9vo="
+      "Tetris_Anti.pdb": "sha256-U3AJAdiHXFBQQa2gER89f9l+FOEbYn1JLyTzbPpss8I="
     }
   },
   "cacheBootResources": true,
