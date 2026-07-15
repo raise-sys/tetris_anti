@@ -105,6 +105,38 @@ html, body {
     margin: 0;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-pause-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #00f0f0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: all 0.1s ease;
+}
+
+.header-pause-btn:hover {
+    background: rgba(0, 240, 240, 0.15);
+    border-color: rgba(0, 240, 240, 0.4);
+    box-shadow: 0 0 10px rgba(0, 240, 240, 0.3);
+}
+
+.header-pause-btn:active {
+    transform: scale(0.92);
+}
+
 /* --- Middle Panels --- */
 .game-panels-wrapper {
     display: grid;
@@ -295,10 +327,10 @@ html, body {
 /* Left zone: Action and D-pad buttons */
 .left-zone {
     grid-template-areas: 
-        "pause .    hold"
-        "hard  .    ."
-        "left  drop right";
-    grid-template-rows: 1fr 1fr 1.2fr;
+        "hard .    hold"
+        "left drop right"
+        ".    .    .";
+    grid-template-rows: 1fr 1.2fr 0.8fr;
     grid-template-columns: 1.3fr 0.9fr 1.3fr;
     gap: 6px;
     align-items: center;
@@ -309,8 +341,8 @@ html, body {
     grid-template-areas: 
         "rotate"
         "rotate"
-        "rotate";
-    grid-template-rows: 1fr 1fr 1.2fr;
+        ".";
+    grid-template-rows: 1fr 1.2fr 0.8fr;
     grid-template-columns: 1fr;
     gap: 6px;
     align-items: center;
@@ -389,21 +421,7 @@ html, body {
     box-shadow: 0 0 12px rgba(255, 0, 127, 0.4);
 }
 
-.btn-pause { 
-    grid-area: pause; 
-    border-radius: 10px; 
-    font-size: 0.8rem; 
-    color: #00f0f0;
-    border-color: rgba(0, 240, 240, 0.25);
-    aspect-ratio: auto;
-    height: 42px;
-    text-transform: uppercase;
-}
-.btn-pause:active {
-    background: rgba(0, 240, 240, 0.25);
-    border-color: #00f0f0;
-    box-shadow: 0 0 12px rgba(0, 240, 240, 0.4);
-}
+
 
 .btn-hold { 
     grid-area: hold; 

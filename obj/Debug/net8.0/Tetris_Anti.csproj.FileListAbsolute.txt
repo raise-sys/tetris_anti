@@ -618,6 +618,7 @@ C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\T
 C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\Tetris_Anti.AssemblyInfo.cs
 C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\Tetris_Anti.csproj.CoreCompileInputs.cache
 C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\Tetris_Anti.MvcApplicationPartsAssemblyInfo.cache
+C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\Tetris_Anti.sourcelink.json
 C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\webcil\Microsoft.AspNetCore.Authorization.wasm
 C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\webcil\Microsoft.AspNetCore.Components.wasm
 C:\00_ReiSoft\04_C#\06_WebAssembly\04_Tetris_Anti\Tetris_Anti\obj\Debug\net8.0\webcil\Microsoft.AspNetCore.Components.Forms.wasm

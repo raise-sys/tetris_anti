@@ -10,9 +10,14 @@
         <!-- Header -->
         <div class="game-header">
             <div class="game-title">TETRIS</div>
-            <div class="hi-score-box">
-                <p class="hi-score-label">High Score</p>
-                <p class="hi-score-val">@highScore.ToString("D6")</p>
+            <div class="header-right">
+                <button class="header-pause-btn" @onclick="TogglePause" title="Pause / Resume">
+                    @(gameState == GameState.Paused ? "▶" : "⏸")
+                </button>
+                <div class="hi-score-box">
+                    <p class="hi-score-label">High Score</p>
+                    <p class="hi-score-val">@highScore.ToString("D6")</p>
+                </div>
             </div>
         </div>
 
@@ -166,9 +171,6 @@
         <!-- Bottom: Controls D-pad (Mobile Friendly) -->
         <div class="mobile-controls">
             <div class="control-zone left-zone">
-                <button class="ctrl-btn btn-pause" @onclick="TogglePause">
-                    @(gameState == GameState.Paused ? "Resume" : "Pause")
-                </button>
                 <button class="ctrl-btn btn-hard" @onclick="HardDrop">Hard</button>
                 <button class="ctrl-btn btn-hold" @onclick="Hold">Hold</button>
                 <button class="ctrl-btn btn-left" @onclick="MoveLeft">◀</button>
