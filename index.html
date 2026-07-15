@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Arcade Tetris</title>
+    <base href="/tetris_anti/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="Tetris_Anti.styles.css" rel="stylesheet" />
+    <!-- Orbitron and Rajdhani Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <!-- Tetris Sound Synthesizer & LocalStorage -->
+    <script>
+        window.tetrisAudio = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playTone(freq, type, duration, volume) {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    if (this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                    
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    
+                    osc.type = type || 'sine';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    
+                    gain.gain.setValueAtTime(volume || 0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {
+                    console.error("Audio error", e);
+                }
+            },
+            playMove() {
+                this.playTone(150, 'triangle', 0.08, 0.15);
+            },
+            playRotate() {
+                this.playTone(300, 'triangle', 0.1, 0.15);
+            },
+            playDrop() {
+                this.playTone(80, 'sawtooth', 0.15, 0.2);
+            },
+            playLineClear(lines) {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    
+                    let now = this.ctx.currentTime;
+                    let notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    if (lines >= 4) {
+                        notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50]; // Full scale
+                    }
+                    
+                    notes.forEach((freq, index) => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + index * 0.06);
+                        gain.gain.setValueAtTime(0.1, now + index * 0.06);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.06 + 0.3);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        
+                        osc.start(now + index * 0.06);
+                        osc.stop(now + index * 0.06 + 0.3);
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            playGameOver() {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    
+                    let now = this.ctx.currentTime;
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(60, now + 1.0);
+                    
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.0);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start();
+                    osc.stop(now + 1.0);
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            playLevelUp() {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    
+                    let now = this.ctx.currentTime;
+                    let notes = [587.33, 587.33, 587.33, 783.99, 987.77];
+                    notes.forEach((freq, index) => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + index * 0.1);
+                        gain.gain.setValueAtTime(0.12, now + index * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.1 + 0.25);
+                        
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        
+                        osc.start(now + index * 0.1);
+                        osc.stop(now + index * 0.1 + 0.25);
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        };
+
+        window.tetrisStorage = {
+            getItem(key) {
+                return localStorage.getItem(key);
+            },
+            setItem(key, value) {
+                localStorage.setItem(key, value);
+            }
+        };
+    </script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>
